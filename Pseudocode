@@ -1,0 +1,87 @@
+void get_token(){
+    while current character is space
+        set current character as next character in source_buffer
+    end while
+    
+    if current character is letter
+        get word and add to token_string
+    else if current character is number
+        get number and add to token_string
+    else if current character is quote
+        get string and add to token_string
+    else
+        get special character and add to token_string
+    end if
+}
+
+void get_char(){
+    if source_buffer is at end of line
+        put new line into source_buffer
+    end if
+    if current line is comment
+        skip to end of comment
+    end if
+}
+
+void get_word(){
+    while current character is letter
+        add character to word
+        get next character
+    end while
+    
+    make word lower case
+    if word is in list of reserved words
+        identify token code type as keyword
+    else
+        identify token code type as identifier
+    end if
+}
+
+void get_number(){
+    sets token code type to integer
+    while current character is integer or 'e' or '.' or '-'
+        if current character is 'e' or '.' or '-'
+            change token code type to real number
+        end if
+        add character to number
+        get next character
+    end while
+    store number in new literal object
+}
+
+void get_string(){
+    set token code type to string
+    if start quote is "
+        end quote is "
+    else if start quote is '
+        end quote is '
+    else
+        end quote is \
+    end if
+    get character after start quote
+    while current character is not end quote
+        add character to string
+    end while
+    store string in new literal object
+}
+
+void get_special(){
+    for i <- 5 to 25 
+        if character is ith element of the list of special characters
+            set token code to special character's code
+            add special character to token_string
+        end if
+    end for
+}
+
+void print_token(){
+    print token
+    print symbol_string
+    if token is literal
+        print literal
+    else if token is special character
+        print symbol
+    else if token is keyword
+        print keyword
+    end if
+}

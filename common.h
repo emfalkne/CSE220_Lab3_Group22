@@ -4,7 +4,9 @@
 //
 //  Created by Bryce Holton.
 //  Copyright (c) 2014 Bryce Holton. All rights reserved.
-//
+//	Editted by Group 22
+//	Scott Dexhimer (SDexh), Emily Falkner (emfalkne), Savannah Puckett (snpucket)
+//	Git Hub Url: https://github.com/emfalkne/CSE220_Lab3_Group22/commits/master
 
 #ifndef CSE220_project2_common_h
 #define CSE220_project2_common_h

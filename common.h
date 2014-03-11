@@ -4,9 +4,7 @@
 //
 //  Created by Bryce Holton.
 //  Copyright (c) 2014 Bryce Holton. All rights reserved.
-//	Editted by Group 22
-//	Scott Dexhimer (SDexh), Emily Falkner (emfalkne), Savannah Puckett (snpucket)
-//	Git Hub Url: https://github.com/emfalkne/CSE220_Lab3_Group22/commits/master
+//
 
 #ifndef CSE220_project2_common_h
 #define CSE220_project2_common_h
@@ -15,6 +13,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <time.h>
+#pragma warning(disable: 4996)
 
 #define FORM_FEED_CHAR          '\f'
 #define MAX_FILE_NAME_LENGTH    32
@@ -42,7 +41,7 @@ typedef enum
     ARRAY, BEGIN, CASE, CONST, DIV, DO, DOWNTO, ELSE, END, FFILE,
     FOR, FUNCTION, GOTO, IF, IN, LABEL, MOD, NIL, NOT, OF, OR, PACKED,
     PROCEDURE, PROGRAM, RECORD, REPEAT, SET, THEN, TO, TYPE, UNTIL,
-    VAR, WHILE, WITH,
+    VAR, WHILE, WITH, NIHIL
 }
 TokenCode;
 
@@ -51,7 +50,7 @@ TokenCode;
  *****************************/
 typedef enum
 {
-    INTEGER_LIT, REAL_LIT, STRING_LIT,
+    INTEGER_LIT = 0, REAL_LIT, STRING_LIT,
 }
 LiteralType;
 
@@ -60,13 +59,14 @@ LiteralType;
  a literal value, and a token code.  It also must have a link to 
  another token since this must be stored as a linked list.
  ***************/
-typedef struct
+struct Token
 {
-   	LiteralType type;
+	LiteralType type;
 	char value[MAX_TOKEN_STRING_LENGTH];
 	TokenCode code;
 	struct Token *next;
-}
-Token;
+    //Missing code goes here
+	//No it doesn't
+};
 
 #endif

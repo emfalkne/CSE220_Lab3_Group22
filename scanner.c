@@ -78,31 +78,39 @@ const RwStruct rw_table[8][10] = {
 //initializes the variables necessary to run scanner
 void init_scanner(char source_name[])
 {
+	//copies the source name to src_name variable
     strcpy(src_name, source_name);
+	//clears the tokens from memory
 	clear_token_line();
-    tl_head = NULL;
+	//opens the output file
 	fin = fopen(src_name, "r");
 }
 
+//takes care of final business with the scanner class
 void close_scanner()
 {
+	//closes the file
 	fclose(fin);
+	//clears the tokens from memory
 	clear_token_line();
 }
 
+//reads the next line from the input stream
 char read_next_line()
 {
 	char ch;
+	//removes the tokens from memory
 	clear_token_line();
+	//reads the line
 	read_line(&ch);
+	//tokenizes the line
 	tokenize_line();
+	//returns the char used to determine when EOF is reached
 	return ch;
 }
 
-char *get_file_line()
-{
-	return line;
-}
+//gets the line that was most recently read
+char *get_file_line() {return line;}
 
 //used to convert the file into a char array
 static void read_line(char *last)
@@ -111,13 +119,17 @@ static void read_line(char *last)
 	int i = 0;
 	do
 	{
-		//gets a new char and increments i
+		//gets a new char, if no char could be read
 		if(fread(&stream_line[i], 1, 1, fin) == 0)
 		{
+			//EOF has been reached
 			stream_line[i] = EOF;
 		}
+		//increments i
 		i++;
+		//while end of line or EOF has not been reached
 	}while('\n' != stream_line[i - 1] && EOF != stream_line[i - 1]);
+	//the char at the end of the line
 	*last = stream_line[i - 1];
 	//if it isn't, installs a null character at the end
 	stream_line[i - 1] = '\0';
@@ -125,44 +137,58 @@ static void read_line(char *last)
 	strcpy(line, stream_line);
 }
 
-struct Token *get_token_line()
-{
-	return tl_head;
-}
+//returns the token linked list
+struct Token *get_token_line() {return tl_head;}
 
+//removes tokens from memory and sets head to null
 void clear_token_line()
 {
+	//calls the recursive remove function
 	rem_token(tl_head);
+	//sets head to null
 	tl_head = NULL;
 }
 
+//used to recursively remove tokens from memory
 static void rem_token(struct Token *t)
 {
+	//if there is a token
 	if(t)
 	{
+		//call rem_token on the next token
 		rem_token(t->next);
+		//free the token from memory
 		free(t);
 	}
 }
 
+//Savannah: Debug this part ----------------------------------------------------------------------------------------------------------------------------
+//tokenizes the line
 static void tokenize_line()
 {
 	char *cur_ch = line;
 	int adv = 0;
 	struct Token *t = tokenize_word(&adv, cur_ch);
+	//if tokenizes_word failes
 	if(!t)
 	{
+		//makes a token with a value of '\0'
 		t = (struct Token*)malloc(sizeof(struct Token));
 		t->value[0] = '\0';
 		t->next = NULL;
 		add_token(t);
 		t = NULL;
 	}
+	//adds the token to the list
 	add_token(t);
+	//while tokenize word succeeds
 	while(t)
 	{
+		//advances by the appropriate amount
 		cur_ch += adv;
+		//tokenizes starting at cur_ch
 		t = tokenize_word(&adv, cur_ch);
+		//adds the token
 		add_token(t);
 	}
 }
@@ -175,11 +201,15 @@ static struct Token *tokenize_word(int *i, char *ch)
 	struct Token *t;
 	while(' ' == *ch)
 	{
+		//advance to the next valid character
 		num_adv = adv_to_valid(ch);
+		//if num_advance == 0
 		if(0 == num_adv)
 		{
+			//set to one to avoid infinite loop
 			num_adv = 1;
 		}
+		//advances the char pointer
 		ch += num_adv;
 	}
 	//if there is nothing to tokenize on the line, returns null
@@ -204,38 +234,46 @@ static struct Token *tokenize_word(int *i, char *ch)
 static int adv_to_valid(char *ch)
 {
 	int num_adv = 0;
+	//while the value ch is less than than 32 (all chars and symbols)
 	while(*ch < 32 && '\0' != *ch)
 	{
+		//goes to the next char
 		ch++;
+		//increments the number
 		num_adv++;
 	}
+	//if the current ch and the next ch are \ es
 	if('\\' == *ch && '\\' == *(ch + 1))
 	{
+		//advances to new line
 		num_adv += adv_to_nl(ch);
-		return num_adv;
 	}
 	return num_adv;
 }
+//End Debug	---------------------------------------------------------------------------------------------------------------------------------------------
 
 //skips the line
 static int adv_to_nl(char *ch)
 {
 	int i = 0;
+	//while the value of ch is not null
 	while('\0' != *ch)
 	{
+		//incrament the location of ch and i
 		ch++;
 		i++;
 	}
 	return i;
 }
 
+//interprets the character and parses the meaning of the word
 static int interpret_ch(char *dest, char *src)
 {
 	int i = identify(TOLOWERC(*src)), num_adv;
 	switch(i)
 	{
 	case 1:
-		num_adv= parse_word(dest, src);
+		num_adv = parse_word(dest, src);
 		break;
 	case 2:
 		num_adv = parse_number(dest, src);
@@ -297,13 +335,17 @@ static int is_symbol(char ch)
 static int parse_word(char *dest, char *src)
 {
 	int num_adv = 0;
+	//while the char is a letter, number, or underscore
 	while(is_letter(TOLOWERC(*src)) || is_number(*src) || '_' == *src)
 	{
+		//copies the character to the destination
 		*dest = TOLOWERC(*src);
+		//increments the destination and source locations
 		dest++;
 		src++;
 		num_adv++;
 	}
+	//sets the last char to be null (for string)
 	*dest = '\0';
 	return num_adv;
 }
@@ -336,8 +378,10 @@ static int parse_number(char *dest, char *src)
 static int parse_symbol(char *dest, char *src)
 {
 	int num_adv = 0;
+	//jumps to the appropriate case
 	switch(*src)
 	{
+		//if it is a -
 	case '-':
 		if(is_number(*(src + 1)))
 		{
@@ -352,6 +396,7 @@ static int parse_symbol(char *dest, char *src)
 		}
 		break;
 
+		//if it is a :
 	case ':':
 		if('=' == *(src + 1))
 		{
@@ -372,6 +417,7 @@ static int parse_symbol(char *dest, char *src)
 		}
 		break;
 
+		//...
 	case '\'':
 		*dest = *src;
 		dest++;
@@ -389,6 +435,7 @@ static int parse_symbol(char *dest, char *src)
 		num_adv++;
 		break;
 
+		//you get the idea
 	case '\"':
 		*dest = *src;
 		dest++;
@@ -492,6 +539,7 @@ static int parse_symbol(char *dest, char *src)
 	 return num_adv;
 }
 
+//adds the token to the list
 static void add_token(struct Token *t)
 {
 	//if no head
@@ -519,28 +567,39 @@ static void add_token(struct Token *t)
 static void make_sense_token(struct Token *t)
 {
 	char ch = *(t->value);
+	//switches to the appropriate case
 	switch(ch)
 	{
+		//if a ' was encountered
 	case '\'':
+		//it's a string
 		t->code = STRING;
 		t->type = STRING_LIT;
 		break;
+		//same with "
 	case '\"':
 		t->code = STRING;
 		t->type = STRING_LIT;
 		break;
+
+		//if a -
 	case '-':
+		//if the next char is a number
 		if(is_number(*((t->value) + 1)))
 		{
+			//then it's a number
 			t->code = NUMBER;
 			t->type = INTEGER_LIT;
 		}
+		//else it is a minus
 		else
 		{
 			t->code = MINUS;
 			t->type = REAL_LIT;
 		}
 		break;
+
+		//now for a bunch of symbols
 	case ':':
 		if('=' == *((t->value) + 1))
 		{
@@ -553,42 +612,52 @@ static void make_sense_token(struct Token *t)
 			t->type = REAL_LIT;
 		}
 		break;
+
 	case '+':
 		t->code = PLUS;
 		t->type = REAL_LIT;
 		break;
+
 	case '=':
 		t->code = EQUAL;
 		t->type = REAL_LIT;
 		break;
+
 	case '*':
 		t->code = STAR;
 		t->type = REAL_LIT;
 		break;
+
 	case '(':
 		t->code = LPAREN;
 		t->type = REAL_LIT;
 		break;
+
 	case ')':
 		t->code = RPAREN;
 		t->type = REAL_LIT;
 		break;
+
 	case '[':
 		t->code = LBRACKET;
 		t->type = REAL_LIT;
 		break;
+
 	case ']':
 		t->code = RBRACKET;
 		t->type = REAL_LIT;
 		break;
+
 	case ';':
 		t->code = SEMICOLON;
 		t->type = REAL_LIT;
 		break;
+
 	case ',':
 		t->code = COMMA;
 		t->type = REAL_LIT;
 		break;
+
 	case '.':
 		if('.' == *((t->value) + 1))
 		{
@@ -601,10 +670,12 @@ static void make_sense_token(struct Token *t)
 			t->type = REAL_LIT;
 		}
 		break;
+
 	case '/':
 		t->code = SLASH;
 		t->type = REAL_LIT;
 		break;
+
 	case '<':
 		if('=' == *((t->value) + 1))
 		{
@@ -617,6 +688,7 @@ static void make_sense_token(struct Token *t)
 			t->type = REAL_LIT;
 		}
 		break;
+
 	case '>':
 		if('=' == *((t->value) + 1))
 		{
@@ -629,6 +701,7 @@ static void make_sense_token(struct Token *t)
 			t->type = REAL_LIT;
 		}
 		break;
+
 	case '!':
 		if('=' == *((t->value) + 1))
 		{
@@ -641,80 +714,88 @@ static void make_sense_token(struct Token *t)
 			t->type = REAL_LIT;
 		}
 		break;
+
 	case EOF:
 		t->code = END_OF_FILE;
 		t->type = REAL_LIT;
 		break;
+
 	case '&':
 		t->code = AND;
 		t->type = REAL_LIT;
 		break;
+
 	case '|':
 		t->code = OR;
 		t->type = REAL_LIT;
 		break;
+
 	case '%':
 		t->code = MOD;
 		t->type = REAL_LIT;
 		break;
+
 	case '\0':
 		t->code = NO_TOKEN;
 		t->type = REAL_LIT;
 		break;
+
+		//ok, so Im pretty sure that there is a bug in here
 	default:
+		//If char is a number
 		if(is_number(ch))
 		{
+			//then it's a number
 			t->code = NUMBER;
 			t->type = INTEGER_LIT;
 		}
+		//otherwise it is going to either be a real_lit or identifier
+//Emily: Debug this section --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		else
 		{
-			int i = 0, j = 0, esc = 0;
-			/*
-			while('\0' != t->value[i])
+			int i, j = 0, esc = 0;
+			//if the length of the string is greater than 9, it cannot be a real lit
+			if(strlen(t->value) > 9)
 			{
-				i++;
-			}
-			*/
-			i = strlen(t->value);
-			if(i > 9)
-			{
+				//therefore it is an identifier
 				t->code = IDENTIFIER;
 			}
 			else
 			{
-				for(i = 0; i < 11; i++)
+				//while i < the width of the matrix
+				for(i = 0; i < 11 && 0 == esc; i++)
 				{
-				while(j < 10 && 0 == esc && NULL != rw_table[j][i].string)
-				{
-					if(0 != strcmp(rw_table[j][i].string, t->value))
+					//while j < the height of the matrix and escape == 0
+					while(j < 10 && 0 == esc && NULL != rw_table[j][i].string)
 					{
-						j++;
-					}
-					else
-					{
-						esc++;
+						//if the strings are not equal
+						if(0 != strcmp(rw_table[j][i].string, t->value))
+						{
+							//go to the next row
+							j++;
+						}
+						//if they are equal
+						else
+						{
+							//incrament esc
+							esc++;
+						}
 					}
 				}
-				}
+				//if no match was found
 				if(0 == esc)
 				{
+					//then it is an identifier
 					t->code = IDENTIFIER;
 				}
+				//moves j back one place
 				j--;
+				//sets the code to the appropriate token_code
 				t->code = rw_table[j][i].token_code;
 			}
 			t->type = REAL_LIT;
 		}
+//End Section ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		break;
 	};
-
-
-/*
-    NO_TOKEN, UPARROW,	ERROR, ARRAY, BEGIN, CASE, CONST,
-	DIV, DO, DOWNTO, ELSE, END, FFILE,
-    FOR, FUNCTION, GOTO, IF, IN, LABEL, NIL, OF, PACKED,
-    PROCEDURE, PROGRAM, RECORD, REPEAT, SET, THEN, TO, TYPE, UNTIL,
-    VAR, WHILE, WITH,
-*/
 }

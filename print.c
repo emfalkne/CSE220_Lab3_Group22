@@ -59,21 +59,31 @@ static void print_page_header(char source_name[], char date[])
 	fwrite("Page\t", strlen("Page\t"), 1, foutput);
     putchar(FORM_FEED_CHAR);
 }
+
+//prints the tokens given the head of a list
 void print_tokens(struct Token *t, char source_name[], char date[])
 {
+	//while a token is present
     while(t)
 	{
+		//makes a string to store the line to print
 		char to_print[MAX_PRINT_LINE_LENGTH];
 		int i;
+		//adds "\t>> " to the start of the line
 		strcpy(to_print, "\t>> ");
+		//if the code is identifier
 		if(IDENTIFIER == t->code)
 		{
+			//adds "<identifier>" to the string
 			strcat(to_print, SYMBOL_STRINGS[1]);
 			i = strlen(to_print);
+			//adds a '\t' and sets the end to '\0'
 			to_print[i++] = '\t';
 			to_print[i] = '\0';
+			//adds the identifier value to the end of the string
 			strcat(to_print, t->value);
 		}
+		//samething for number
 		else if(NUMBER == t->code)
 		{
 			strcat(to_print, SYMBOL_STRINGS[2]);
@@ -83,6 +93,7 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 			to_print[i] = '\0';
 			strcat(to_print, t->value);
 		}
+		//samething for string
 		else if(STRING == t->code)
 		{
 			strcat(to_print, SYMBOL_STRINGS[3]);
@@ -92,88 +103,42 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 			to_print[i] = '\0';
 			strcat(to_print, t->value);
 		}
+		//for keywords
 		else
 		{
 			char str[MAX_TOKEN_STRING_LENGTH];
 			int j = 0;
+			//copies the value to str
 			strcpy(str, t->value);
+			//capitalizes all the letters
 			while(str[j])
 			{
 				str[j++] = TOUPPERC(str[j]);
 			}
+			//adds this to the end of the output
 			strcat(to_print, str);
 			i = strlen(to_print);
+			//adds two tabs and sets the last char to newline
 			to_print[i++] = '\t';
 			to_print[i++] = '\t';
 			to_print[i] = '\0';
 			strcat(to_print, t->value);
 		}
+		//prints the line
 		print_line(to_print, source_name, date);
+		//goes to the next line
 		t = t->next;
 	}
 }
 
+//initializes the output stream
 void set_fout(char *fname)
 {
 	foutput = fopen(fname, "w");
 }
+
+//closes the output stram
 void close_fout()
 {
 	fclose(foutput);
-}
-static char *itostr(int itobeconv)
-{
-	char temp[128], t;
-	int index = 0, j = 0, i = itobeconv;
-	temp[0] = '0';
-	temp[1] = '\0';
-	while(i > 0)
-	{
-		switch(i % 10)
-		{
-		case 0:
-			temp[index] = '0';
-			break;
-		case 1:
-			temp[index] = '1';
-			break;
-		case 2:
-			temp[index] = '2';
-			break;
-		case 3:
-			temp[index] = '3';
-			break;
-		case 4:
-			temp[index] = '4';
-			break;
-		case 5:
-			temp[index] = '5';
-			break;
-		case 6:
-			temp[index] = '6';
-			break;
-		case 7:
-			temp[index] = '7';
-			break;
-		case 8:
-			temp[index] = '8';
-			break;
-		case 9:
-			temp[index] = '9';
-			break;
-		};
-		index++;
-		i = i / 10;
-	}
-	if(index > 0)
-	{
-		temp[index--] = '\0';
-	}
-	while(j < index)
-	{
-		t = temp[j];
-		temp[j++] = temp[index];
-		temp[index--] = t;
-	}
-	return temp;
 }

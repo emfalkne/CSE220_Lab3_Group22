@@ -64,15 +64,15 @@ static CharCode char_table[256];  // The character table
 static char line[MAX_SOURCE_LINE_LENGTH];
 static struct Token *tl_head;
 
-const RwStruct rw_table[8][10] = {
-    {{"do",DO},{"if",IF},{"in",IN},{"of",OF},{"or",OR},{"to",TO},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}, //Reserved words of size 2
-    {{"and",AND},{"div",DIV},{"end",END},{"for",FOR},{"mod",MOD},{"nil",NIL},{"not",NOT},{"set",SET},{"var",VAR},{NULL,NIHIL}}, //Reserved words of size 3
-    {{"case",CASE},{"else",ELSE},{"file",FFILE},{"goto",GOTO},{"then",THEN},{"type",TYPE},{"with",WITH},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}, //Reserved words of size 4
-    {{"array",ARRAY},{"begin",BEGIN},{"const",CONST},{"label",LABEL},{"until",UNTIL},{"while",WHILE},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}},  //Reserved words of size 5
-    {{"downto",DOWNTO}, {"packed",PACKED},{"record",RECORD}, {"repeat",REPEAT},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}},  // Reserved words of size 6
-	{{"program", PROGRAM},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}, // Reserved words of size 7
-    {{"function", FUNCTION},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}, // Reserved words of size 8
-    {{"procedure", PROCEDURE},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}  // Reserved words of size 9
+const RwStruct rw_table[8][13] = {
+    {{"do",DO},{"if",IF},{"in",IN},{"of",OF},{"or",OR},{"to",TO},{"<=",LE},{">=",GE},{"<",LT},{">",GT},{"!=",NE}}, //Reserved words of size 2
+    {{"and",AND},{"div",DIV},{"end",END},{"for",FOR},{"mod",MOD},{"nil",NIL},{"not",NOT},{"set",SET},{"var",VAR},{"!",NOT}}, //Reserved words of size 3
+    {{"case",CASE},{"else",ELSE},{"file",FFILE},{"goto",GOTO},{"then",THEN},{"type",TYPE},{"with",WITH},{"*",STAR},{"+",PLUS},{"nihil",NIL}}, //Reserved words of size 4
+    {{"array",ARRAY},{"begin",BEGIN},{"const",CONST},{"label",LABEL},{"until",UNTIL},{"while",WHILE},{"-",MINUS},{"=",EQUAL},{":",COLON},{",",COMMA},{"/",SLASH},{"<ERROR>",ERROR},{"FILE",FFILE}},  //Reserved words of size 5
+    {{"downto",DOWNTO}, {"packed",PACKED},{"record",RECORD}, {"repeat",REPEAT},{"string",STRING},{"(",LPAREN},{")",RPAREN},{"..",DOTDOT},{".",PERIOD},{"nihil",NIL}},  // Reserved words of size 6
+	{{"program", PROGRAM},{"^",UPARROW},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL}}, // Reserved words of size 7
+    {{"function", FUNCTION},{"<no token>",NO_TOKEN},{"[",LBRACKET},{"]",RBRACKET},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL}}, // Reserved words of size 8
+    {{"procedure", PROCEDURE},{";",SEMICOLON},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL}}  // Reserved words of size 9
 };
 
 //initializes the variables necessary to run scanner
@@ -84,13 +84,26 @@ void init_scanner(char source_name[])
 	clear_token_line();
 	//opens the output file
 	fin = fopen(src_name, "r");
+	if(fin == NULL){
+		printf("%s\n",source_name);
+		printf("%s\n",src_name);
+		printf("%s\n","fopen failed");
+	}
 }
 
 //takes care of final business with the scanner class
 void close_scanner()
 {
 	//closes the file
-	fclose(fin);
+	if(fin != NULL){
+		int fclose_success = fclose(fin);
+		if(fclose_success == 0){
+	//		printf("%s","Fclose success");
+		}
+		else{
+			printf("%s","ERROR");
+		}
+	}
 	//clears the tokens from memory
 	clear_token_line();
 }
@@ -766,7 +779,7 @@ static void make_sense_token(struct Token *t)
 				for(i = 0; i < 11 && 0 == esc; i++)
 				{
 					//while j < the height of the matrix and escape == 0
-					while(j < 10 && 0 == esc && NULL != rw_table[j][i].string)
+					while(j < 8 && 0 == esc && NULL != rw_table[j][i].string)
 					{
 						//if the strings are not equal
 						if(0 != strcmp(rw_table[j][i].string, t->value))
@@ -799,3 +812,4 @@ static void make_sense_token(struct Token *t)
 		break;
 	};
 }
+

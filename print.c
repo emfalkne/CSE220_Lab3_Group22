@@ -8,7 +8,7 @@
 
 #include "print.h"
 #define TOUPPERC(a) ((96 < a && a < 123) ? a - 32 : a)
-static FILE *foutput;
+//static FILE *foutput;
 
 const char* const SYMBOL_STRINGS[] =
 {
@@ -26,8 +26,58 @@ const char* const SYMBOL_STRINGS[] =
 static void print_page_header(char source_name[], char date[]);
 static char *itostr(int i);
 
-void print_line(char line[], char source_name_to_print[], char date_to_print[])
+void print_line(char line[], char source_name_to_print[], char date_to_print[], int token)
 {
+	//statically stores the line number
+    static int line_count = MAX_LINES_PER_PAGE;
+	static int displayed_line_count = 1;
+    //checks if the next line will exceed the maximum number of lines per page
+    if (++line_count > MAX_LINES_PER_PAGE)
+    {
+		//if it does, calls print header and resets the line count
+        print_page_header(source_name_to_print, date_to_print);
+		line_count = 1;
+    }
+
+	if(!token)
+	{
+		//prints the line number and tabs
+		printf("%d:\t", displayed_line_count++);
+	}
+
+	//if the string length exceed the max string length
+    if (strlen(line) > MAX_PRINT_LINE_LENGTH) 
+    {
+		//creates a temp array and pointer used to seperate the strings
+		char Temp[MAX_PRINT_LINE_LENGTH], *tptr;
+		//index
+		int i;
+		//copies from line to temp
+		for(i = 0; i < MAX_PRINT_LINE_LENGTH - 1; i++)
+		{
+			Temp[i] = line[i];
+		}
+		//adds a null terminator at the end
+		Temp[i] = '\0';
+		//prints the temp array
+		printf("%s\n", Temp);
+
+		//if the next character is not a null
+		if(line[i] != '\0')
+		{
+			//sets the tptr to where we left off
+			tptr = &line[i];
+			//recursively calls itself until the char fits
+			print_line(tptr, source_name_to_print, date_to_print, token);
+		}
+    }
+	//if it does not exceed the max char length
+	else
+	{
+		//it prints
+		printf("%s\n", line);
+	}
+	/*
     char save_ch;
     char *save_chp = NULL;
     static int line_count = MAX_LINES_PER_PAGE;
@@ -52,12 +102,17 @@ void print_line(char line[], char source_name_to_print[], char date_to_print[])
     {
         *save_chp = save_ch;
     }
+	*/
 }
 static void print_page_header(char source_name[], char date[])
 {
     static int page_number = 0;
-	fwrite("Page\t", strlen("Page\t"), 1, foutput);
+	/*
+	fwrite("Page\t\n", strlen("Page\t\n"), 1, foutput);
     putchar(FORM_FEED_CHAR);
+	*/
+	page_number ++;    //increases the page number up by one.
+	printf("%s\nPage: %d %s\n", source_name, page_number, date); //prints out a header with the file name, page number and the date
 }
 
 //prints the tokens given the head of a list
@@ -75,7 +130,7 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 		if(IDENTIFIER == t->code)
 		{
 			//adds "<identifier>" to the string
-			strcat(to_print, SYMBOL_STRINGS[1]);
+			strcat(to_print, "<IDENTIFIER>");
 			i = strlen(to_print);
 			//adds a '\t' and sets the end to '\0'
 			to_print[i++] = '\t';
@@ -125,12 +180,13 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 			strcat(to_print, t->value);
 		}
 		//prints the line
-		print_line(to_print, source_name, date);
+		print_line(to_print, source_name, date, 1);
 		//goes to the next line
 		t = t->next;
 	}
 }
 
+/*
 //initializes the output stream
 void set_fout(char *fname)
 {
@@ -142,3 +198,4 @@ void close_fout()
 {
 	fclose(foutput);
 }
+*/

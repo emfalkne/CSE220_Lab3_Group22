@@ -176,7 +176,6 @@ static void rem_token(struct Token *t)
 	}
 }
 
-//Savannah: Debug this part ----------------------------------------------------------------------------------------------------------------------------
 //tokenizes the line
 static void tokenize_line()
 {
@@ -264,7 +263,6 @@ static int adv_to_valid(char *ch)
 	}
 	return num_adv;
 }
-//End Debug	---------------------------------------------------------------------------------------------------------------------------------------------
 
 //skips the line
 static int adv_to_nl(char *ch)
@@ -377,7 +375,7 @@ static int parse_number(char *dest, char *src)
 		num_adv++;
 	}
 	//while the number goes
-	while(is_number(*src))
+	while(is_number(*src) || 'e' == *src || '-' == *src)
 	{
 		*dest = *src;
 		dest++;
@@ -764,52 +762,48 @@ static void make_sense_token(struct Token *t)
 			t->type = INTEGER_LIT;
 		}
 		//otherwise it is going to either be a real_lit or identifier
-//Emily: Debug this section --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		else
 		{
 			int i, j = 0, esc = 0;
-			//if the length of the string is greater than 9, it cannot be a real lit
-			if(strlen(t->value) > 9 || strlen(t->value) < 1)
+			//default is identifier
+			t->code = IDENTIFIER;
+			//while i < the width of the matrix
+			for(i = 0; i < 10 && 0 == esc; i++)
 			{
-				//therefore it is an identifier
-				t->code = IDENTIFIER;
-			}
-			else
-			{
-				//while i < the width of the matrix
-				for(i = 0; i < 11 && 0 == esc; i++)
+				//while j < the height of the matrix and escape == 0
+				for(j = 0; j < 8 && 0 == esc && NULL != rw_table[j][i].string;)
 				{
-					//while j < the height of the matrix and escape == 0
-					for(j = 0; j < 8 && 0 == esc && NULL != rw_table[j][i].string;)
+					//if the strings are not equal
+					if(0 != strcmp(rw_table[j][i].string, t->value))
 					{
-						//if the strings are not equal
-						if(0 != strcmp(rw_table[j][i].string, t->value))
-						{
-							//go to the next row
-							j++;
-						}
-						//if they are equal
-						else
-						{
-							//incrament esc
-							esc++;
-						}
+						//go to the next row
+						j++;
+					}
+					//if they are equal
+					else
+					{
+						//incrament esc
+						esc++;
 					}
 				}
-				//if no match was found
-				if(0 == esc)
-				{
-					//then it is an identifier
-					t->code = IDENTIFIER;
-				}
-				//moves j back one place
-				j--;
+			}
+			//Kludge
+			if(0 ==  strcmp("var", t->value))
+			{
+				t->code = VAR;
+			}
+			//if a match was found
+			if(0 != esc)
+			{
+				//decrements i because i is incremented at the end of the for loop
+				i--;
 				//sets the code to the appropriate token_code
 				t->code = rw_table[j][i].token_code;
 			}
+			//It will be a real_lit
 			t->type = REAL_LIT;
 		}
-//End Section ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+		//end of default
 		break;
-	};
+	};//end of switch
 }

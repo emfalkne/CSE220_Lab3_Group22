@@ -23,20 +23,24 @@ int main()//int argc, const char * argv[])
 	//--------------------------------------------------------------------------
 	//initializes the scanner
     init_scanner(source_name);
+	/*
 	//initialies the output
 	set_fout("output.txt");
+	*/
 	//while the end of the file is not reached
 	while(EOF != read_next_line())
 	{
 		//prints the line
-		print_line(get_file_line(), source_name, date);
+		print_line(get_file_line(), source_name, date, 0);
 		//then the token
 		print_tokens(get_token_line(), source_name, date);
 	}
 	//closes the scanner
 	close_scanner();
+	/*
 	//closes the printer
 	close_fout();
+	*/
 	//returns 1
     return 1;
 }

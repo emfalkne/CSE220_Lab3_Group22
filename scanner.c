@@ -64,15 +64,15 @@ static CharCode char_table[256];  // The character table
 static char line[MAX_SOURCE_LINE_LENGTH];
 static struct Token *tl_head;
 
-const RwStruct rw_table[8][13] = {
-    {{"do",DO},{"if",IF},{"in",IN},{"of",OF},{"or",OR},{"to",TO},{"<=",LE},{">=",GE},{"<",LT},{">",GT},{"!=",NE}}, //Reserved words of size 2
-    {{"and",AND},{"div",DIV},{"end",END},{"for",FOR},{"mod",MOD},{"nil",NIL},{"not",NOT},{"set",SET},{"var",VAR},{"!",NOT}}, //Reserved words of size 3
-    {{"case",CASE},{"else",ELSE},{"file",FFILE},{"goto",GOTO},{"then",THEN},{"type",TYPE},{"with",WITH},{"*",STAR},{"+",PLUS},{"nihil",NIL}}, //Reserved words of size 4
-    {{"array",ARRAY},{"begin",BEGIN},{"const",CONST},{"label",LABEL},{"until",UNTIL},{"while",WHILE},{"-",MINUS},{"=",EQUAL},{":",COLON},{",",COMMA},{"/",SLASH},{"<ERROR>",ERROR},{"FILE",FFILE}},  //Reserved words of size 5
-    {{"downto",DOWNTO}, {"packed",PACKED},{"record",RECORD}, {"repeat",REPEAT},{"string",STRING},{"(",LPAREN},{")",RPAREN},{"..",DOTDOT},{".",PERIOD},{"nihil",NIL}},  // Reserved words of size 6
-	{{"program", PROGRAM},{"^",UPARROW},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL}}, // Reserved words of size 7
-    {{"function", FUNCTION},{"<no token>",NO_TOKEN},{"[",LBRACKET},{"]",RBRACKET},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL}}, // Reserved words of size 8
-    {{"procedure", PROCEDURE},{";",SEMICOLON},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL},{"nihil",NIL}}  // Reserved words of size 9
+const RwStruct rw_table[8][10] = {
+    {{"do",DO},{"if",IF},{"in",IN},{"of",OF},{"or",OR},{"to",TO},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}, //Reserved words of size 2
+    {{"and",AND},{"div",DIV},{"end",END},{"for",FOR},{"mod",MOD},{"nil",NIL},{"not",NOT},{"set",SET},{"var",VAR},{NULL,NIHIL}}, //Reserved words of size 3
+    {{"case",CASE},{"else",ELSE},{"file",FFILE},{"goto",GOTO},{"then",THEN},{"type",TYPE},{"with",WITH},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}, //Reserved words of size 4
+    {{"array",ARRAY},{"begin",BEGIN},{"const",CONST},{"label",LABEL},{"until",UNTIL},{"while",WHILE},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}},  //Reserved words of size 5
+    {{"downto",DOWNTO}, {"packed",PACKED},{"record",RECORD}, {"repeat",REPEAT},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}},  // Reserved words of size 6
+	{{"program", PROGRAM},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}, // Reserved words of size 7
+    {{"function", FUNCTION},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}, // Reserved words of size 8
+    {{"procedure", PROCEDURE},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL},{NULL,NIHIL}}  // Reserved words of size 9
 };
 
 //initializes the variables necessary to run scanner
@@ -95,6 +95,9 @@ void init_scanner(char source_name[])
 void close_scanner()
 {
 	//closes the file
+	fclose(fin);
+	//clears the tokens from memory
+	clear_token_line();
 	if(fin != NULL){
 		int fclose_success = fclose(fin);
 		if(fclose_success == 0){
@@ -104,8 +107,6 @@ void close_scanner()
 			printf("%s","ERROR");
 		}
 	}
-	//clears the tokens from memory
-	clear_token_line();
 }
 
 //reads the next line from the input stream
@@ -212,7 +213,7 @@ static struct Token *tokenize_word(int *i, char *ch)
 	char word[MAX_TOKEN_STRING_LENGTH];
 	int num_adv = 0;
 	struct Token *t;
-	while(' ' == *ch)
+	while(' ' == *ch || '\t' == *ch)
 	{
 		//advance to the next valid character
 		num_adv = adv_to_valid(ch);
@@ -248,7 +249,7 @@ static int adv_to_valid(char *ch)
 {
 	int num_adv = 0;
 	//while the value ch is less than than 32 (all chars and symbols)
-	while(*ch < 32 && '\0' != *ch)
+	while(*ch < 33 && '\0' != *ch)
 	{
 		//goes to the next char
 		ch++;
@@ -342,7 +343,7 @@ static int is_symbol(char ch)
 	}
 	return 0;
 }
-//---------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 
 //parses a word
 static int parse_word(char *dest, char *src)
@@ -436,7 +437,7 @@ static int parse_symbol(char *dest, char *src)
 		dest++;
 		src++;
 		num_adv++;
-		while('\'' != *src && '\0' == *src)
+		while('\'' != *src && '\0' != *src)
 		{
 			*dest = *src;
 			dest++;
@@ -454,7 +455,7 @@ static int parse_symbol(char *dest, char *src)
 		dest++;
 		src++;
 		num_adv++;
-		while('\"' != *src && '\0' == *src)
+		while('\"' != *src && '\0' != *src)
 		{
 			*dest = *src;
 			dest++;
@@ -768,7 +769,7 @@ static void make_sense_token(struct Token *t)
 		{
 			int i, j = 0, esc = 0;
 			//if the length of the string is greater than 9, it cannot be a real lit
-			if(strlen(t->value) > 9)
+			if(strlen(t->value) > 9 || strlen(t->value) < 1)
 			{
 				//therefore it is an identifier
 				t->code = IDENTIFIER;
@@ -779,7 +780,7 @@ static void make_sense_token(struct Token *t)
 				for(i = 0; i < 11 && 0 == esc; i++)
 				{
 					//while j < the height of the matrix and escape == 0
-					while(j < 8 && 0 == esc && NULL != rw_table[j][i].string)
+					for(j = 0; j < 8 && 0 == esc && NULL != rw_table[j][i].string;)
 					{
 						//if the strings are not equal
 						if(0 != strcmp(rw_table[j][i].string, t->value))
@@ -812,4 +813,3 @@ static void make_sense_token(struct Token *t)
 		break;
 	};
 }
-

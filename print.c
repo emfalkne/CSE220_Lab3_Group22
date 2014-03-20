@@ -8,7 +8,6 @@
 
 #include "print.h"
 #define TOUPPERC(a) ((96 < a && a < 123) ? a - 32 : a)
-//static FILE *foutput;
 
 const char* const SYMBOL_STRINGS[] =
 {
@@ -26,6 +25,7 @@ const char* const SYMBOL_STRINGS[] =
 static void print_page_header(char source_name[], char date[]);
 static char *itostr(int i);
 
+//prints the line
 void print_line(char line[], char source_name_to_print[], char date_to_print[], int token)
 {
 	//statically stores the line number
@@ -77,40 +77,12 @@ void print_line(char line[], char source_name_to_print[], char date_to_print[], 
 		//it prints
 		printf("%s\n", line);
 	}
-	/*
-    char save_ch;
-    char *save_chp = NULL;
-    static int line_count = MAX_LINES_PER_PAGE;
-    
-    if (++line_count > MAX_LINES_PER_PAGE)
-    {
-        print_page_header(source_name_to_print, date_to_print);
-        line_count = 1;
-    }
-    if (strlen(line) > MAX_PRINT_LINE_LENGTH) 
-    {
-        save_chp = &line[MAX_PRINT_LINE_LENGTH];
-    }
-    if (save_chp)
-    {
-        save_ch = *save_chp;
-        *save_chp = '\0';
-    }
-    fwrite(line, strlen(line), 1, foutput);
-    fwrite("\n", 1, 1, foutput);
-    if (save_chp)
-    {
-        *save_chp = save_ch;
-    }
-	*/
 }
+
+//prints the header for the text
 static void print_page_header(char source_name[], char date[])
 {
     static int page_number = 0;
-	/*
-	fwrite("Page\t\n", strlen("Page\t\n"), 1, foutput);
-    putchar(FORM_FEED_CHAR);
-	*/
 	page_number ++;    //increases the page number up by one.
 	printf("%s\nPage: %d %s\n", source_name, page_number, date); //prints out a header with the file name, page number and the date
 }
@@ -144,7 +116,6 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 			strcat(to_print, SYMBOL_STRINGS[2]);
 			i = strlen(to_print);
 			to_print[i++] = '\t';
-			to_print[i++] = '\t';
 			to_print[i] = '\0';
 			strcat(to_print, t->value);
 		}
@@ -153,7 +124,6 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 		{
 			strcat(to_print, SYMBOL_STRINGS[3]);
 			i = strlen(to_print);
-			to_print[i++] = '\t';
 			to_print[i++] = '\t';
 			to_print[i] = '\0';
 			strcat(to_print, t->value);
@@ -174,8 +144,15 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 			strcat(to_print, str);
 			i = strlen(to_print);
 			//adds two tabs and sets the last char to newline
-			to_print[i++] = '\t';
-			to_print[i++] = '\t';
+			if(strlen(t->value) < 4)
+			{
+				to_print[i++] = '\t';
+				to_print[i++] = '\t';
+			}
+			else if(strlen(t->value) < 8)
+			{
+				to_print[i++] = '\t';
+			}
 			to_print[i] = '\0';
 			strcat(to_print, t->value);
 		}
@@ -185,17 +162,3 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 		t = t->next;
 	}
 }
-
-/*
-//initializes the output stream
-void set_fout(char *fname)
-{
-	foutput = fopen(fname, "w");
-}
-
-//closes the output stram
-void close_fout()
-{
-	fclose(foutput);
-}
-*/

@@ -138,13 +138,14 @@ void print_tokens(struct Token *t, char source_name[], char date[])
 			//capitalizes all the letters
 			while(str[j])
 			{
-				str[j++] = TOUPPERC(str[j]);
+				str[j] = TOUPPERC(str[j]);
+				j++;
 			}
 			//adds this to the end of the output
 			strcat(to_print, str);
 			i = strlen(to_print);
 			//adds two tabs and sets the last char to newline
-			if(strlen(t->value) < 4)
+			if(strlen(t->value) < 3)
 			{
 				to_print[i++] = '\t';
 				to_print[i++] = '\t';

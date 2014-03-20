@@ -13,7 +13,5 @@
 
 void print_line(char *, char source_name[], char date_to_print[], int token);
 void print_tokens(struct Token *t, char source_name[], char date[]);
-//void set_fout(char *fname);
-//void close_fout();
 
 #endif

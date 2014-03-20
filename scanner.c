@@ -98,15 +98,6 @@ void close_scanner()
 	fclose(fin);
 	//clears the tokens from memory
 	clear_token_line();
-	if(fin != NULL){
-		int fclose_success = fclose(fin);
-		if(fclose_success == 0){
-	//		printf("%s","Fclose success");
-		}
-		else{
-			printf("%s","ERROR");
-		}
-	}
 }
 
 //reads the next line from the input stream
@@ -189,6 +180,8 @@ static void tokenize_line()
 		t = (struct Token*)malloc(sizeof(struct Token));
 		t->value[0] = '\0';
 		t->next = NULL;
+		t->code = NIHIL;
+		t->type = REAL_LIT;
 		add_token(t);
 		t = NULL;
 	}
